@@ -90,17 +90,17 @@ namespace Csss
                             x <<= 1;
                             l++;
                             c++;
+                            return or.Lhs;
                         }
 
                         if ((x >> (l - c - 1) & 1) == 0)
                         {
                             return or.Lhs;
                         }
-                        else
-                        {
-                            return or.Rhs;
-                        }
+
+                        return or.Rhs;
                     }
+
                     return m;
                 });
 
