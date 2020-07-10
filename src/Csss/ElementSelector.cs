@@ -155,75 +155,9 @@ namespace Csss
                     }
                 }
 
-                static IEnumerable<ContextualValue<TContext, string>> HandleTerminal(TerminalElementSelector<TContext> selector)
-                {
-                    if (selector.IsNot)
-                    {
-                        yield return ":not(";
-                    }
-
-                    switch (selector)
-                    {
-                        case ElementElementSelector<TContext> { Name: var name }:
-                            yield return name;
-                            break;
-
-                        case IdElementSelector<TContext> { Id: var id }:
-                            yield return "#";
-                            yield return id;
-                            break;
-
-                        case ClassElementSelector<TContext> { Class: var @class }:
-                            yield return ".";
-                            yield return @class;
-                            break;
-
-                        case AttributeElementSelector<TContext> { Attribute: var attribute }:
-                            yield return "[";
-                            yield return attribute;
-                            yield return "]";
-                            break;
-
-                        case AttributeEqualsElementSelector<TContext> { Attribute: var attribute, Value: var value }:
-                            yield return "[";
-                            yield return attribute;
-                            yield return "='";
-                            yield return value;
-                            yield return "']";
-                            break;
-
-                        case AttributeIncludsElementSelector<TContext> { Attribute: var attribute, Value: var value }:
-                            yield return "[";
-                            yield return attribute;
-                            yield return "~='";
-                            yield return value;
-                            yield return "']";
-                            break;
-
-                        case AttributeStartsWithElementSelector<TContext> { Attribute: var attribute, Value: var value }:
-                            yield return "[";
-                            yield return attribute;
-                            yield return "|='";
-                            yield return value;
-                            yield return "']";
-                            break;
-
-                        case AllElementSelector<TContext> _:
-                            yield return "*";
-                            break;
-
-                    };
-
-                    if (selector.IsNot)
-                    {
-                        yield return ")";
-                    }
-                }
-
-
                 if (element != default)
                 {
-                    foreach (var result in HandleTerminal(element))
+                    foreach (var result in element.Compile())
                     {
                         yield return result;
                     }
@@ -231,7 +165,7 @@ namespace Csss
 
                 if (id != default)
                 {
-                    foreach (var result in HandleTerminal(id))
+                    foreach (var result in id.Compile())
                     {
                         yield return result;
                     }
@@ -241,7 +175,7 @@ namespace Csss
                 {
                     foreach (var terminal in others)
                     {
-                        foreach (var result in HandleTerminal(terminal))
+                        foreach (var result in terminal.Compile())
                         {
                             yield return result;
                         }
@@ -355,6 +289,31 @@ namespace Csss
         where TContext : class
     {
         internal override ElementSelector<TContext> Not() => this with { IsNot = true };
+
+        private protected sealed override IEnumerable<ContextualValue<TContext, string>> Compile()
+        {
+            IEnumerable<ContextualValue<TContext, string>> Result()
+            {
+                if (IsNot)
+                {
+                    yield return ":not(";
+                }
+
+                foreach (var result in Output)
+                {
+                    yield return result;
+                }
+
+                if (IsNot)
+                {
+                    yield return ")";
+                }
+            }
+
+            return Result();
+        }
+
+        private protected abstract IEnumerable<ContextualValue<TContext, string>> Output { get; }
     }
 
     internal abstract record SingletonElementSelector<TContext, TSelf> : TerminalElementSelector<TContext>
@@ -374,97 +333,4 @@ namespace Csss
         public override string ToString() => $"{(IsNot ? "!" : "")}{Type}";
     }
 
-    internal sealed record AllElementSelector<TContext> : SingletonElementSelector<TContext, AllElementSelector<TContext>>
-    where TContext : class
-    { }
-
-    internal sealed record AndElementSelector<TContext>(ElementSelector<TContext> Lhs, ElementSelector<TContext> Rhs) : BivariateElementSelector<TContext>(Lhs, Rhs)
-    where TContext : class
-    {
-        internal override ElementSelector<TContext> Not() => new OrElementSelector<TContext>(Lhs.Not(), Rhs.Not());
-    }
-
-    internal sealed record OrElementSelector<TContext>(ElementSelector<TContext> Lhs, ElementSelector<TContext> Rhs) : BivariateElementSelector<TContext>(Lhs, Rhs)
-    where TContext : class
-    {
-        internal override ElementSelector<TContext> Not() => new AndElementSelector<TContext>(Lhs.Not(), Rhs.Not());
-    }
-
-    internal sealed record ParentElementSelector<TContext>(ElementSelector<TContext> Parent) : LocatorElementSelector<TContext>(Parent)
-    where TContext : class
-    { }
-
-    internal sealed record DirectParentElementSelector<TContext>(ElementSelector<TContext> Parent) : LocatorElementSelector<TContext>(Parent)
-    where TContext : class
-    { }
-
-    internal sealed record BeforeElementSelector<TContext>(ElementSelector<TContext> Before) : LocatorElementSelector<TContext>(Before)
-    where TContext : class
-    { }
-
-    internal sealed record ElementElementSelector<TContext>(ContextualValue<TContext, string> Name) : TerminalElementSelector<TContext>
-    where TContext : class
-    {
-        public override string ToString() => $"{(IsNot ? "!" : "")}{Type}({Name})";
-    }
-
-    internal sealed record IdElementSelector<TContext>(ContextualValue<TContext, string> Id) : TerminalElementSelector<TContext>
-    where TContext : class
-    {
-        public override string ToString() => $"{(IsNot ? "!" : "")}{Type}({Id})";
-    }
-
-    internal sealed record ClassElementSelector<TContext>(ContextualValue<TContext, string> Class) : TerminalElementSelector<TContext>
-    where TContext : class
-    {
-        public override string ToString() => $"{(IsNot ? "!" : "")}{Type}({Class})";
-    }
-
-    internal sealed record AttributeElementSelector<TContext>(ContextualValue<TContext, string> Attribute) : TerminalElementSelector<TContext>
-    where TContext : class
-    {
-        public override string ToString() => $"{(IsNot ? "!" : "")}{Type}({Attribute})";
-    }
-
-    internal sealed record AttributeEqualsElementSelector<TContext>(ContextualValue<TContext, string> Attribute, ContextualValue<TContext, string> Value) : TerminalElementSelector<TContext>
-    where TContext : class
-    {
-        public override string ToString() => $"{(IsNot ? "!" : "")}{Type}({Attribute}:{Value})";
-    }
-
-    internal sealed record AttributeIncludsElementSelector<TContext>(ContextualValue<TContext, string> Attribute, ContextualValue<TContext, string> Value) : TerminalElementSelector<TContext>
-    where TContext : class
-    {
-        public override string ToString() => $"{(IsNot ? "!" : "")}{Type}({Attribute}:{Value})";
-    }
-
-    internal sealed record AttributeStartsWithElementSelector<TContext>(ContextualValue<TContext, string> Attribute, ContextualValue<TContext, string> Value) : TerminalElementSelector<TContext>
-    where TContext : class
-    {
-        public override string ToString() => $"{(IsNot ? "!" : "")}{Type}({Attribute}:{Value})";
-    }
-
-    internal sealed record LinkElementSelector<TContext> : SingletonElementSelector<TContext, LinkElementSelector<TContext>>
-    where TContext : class
-    { }
-
-    internal sealed record VisitedElementSelector<TContext> : SingletonElementSelector<TContext, VisitedElementSelector<TContext>>
-    where TContext : class
-    { }
-
-    internal sealed record ActiveElementSelector<TContext> : SingletonElementSelector<TContext, ActiveElementSelector<TContext>>
-    where TContext : class
-    { }
-
-    internal sealed record HoverElementSelector<TContext> : SingletonElementSelector<TContext, HoverElementSelector<TContext>>
-    where TContext : class
-    { }
-
-    internal sealed record FocusElementSelector<TContext> : SingletonElementSelector<TContext, FocusElementSelector<TContext>>
-    where TContext : class
-    { }
-
-    internal sealed record FirstLetterElementSelector<TContext> : SingletonElementSelector<TContext, FirstLetterElementSelector<TContext>>
-    where TContext : class
-    { }
 }
