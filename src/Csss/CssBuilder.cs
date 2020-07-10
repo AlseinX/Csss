@@ -31,5 +31,19 @@ namespace Csss
         public static ElementSelector<TContext> AttributeIncludes(string attribute, string value) => new AttributeIncludsElementSelector<TContext>(attribute, value);
 
         public static ElementSelector<TContext> AttributeStartsWith(string attribute, string value) => new AttributeStartsWithElementSelector<TContext>(attribute, value);
+
+        public static ElementSelector<TContext> All => AllElementSelector<TContext>.Positive;
+
+        public static ElementSelector<TContext> Link => LinkElementSelector<TContext>.Positive;
+
+        public static ElementSelector<TContext> Visited => VisitedElementSelector<TContext>.Positive;
+
+        public static ElementSelector<TContext> Active => ActiveElementSelector<TContext>.Positive;
+
+        public static ElementSelector<TContext> Hover => HoverElementSelector<TContext>.Positive;
+
+        public static ElementSelector<TContext> Focus => FocusElementSelector<TContext>.Positive;
+
+        public static ElementSelector<TContext> FirstLetter => FirstLetterElementSelector<TContext>.Positive;
     }
 }
