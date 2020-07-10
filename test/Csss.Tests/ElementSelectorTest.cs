@@ -9,10 +9,17 @@ namespace Csss.Tests
         [Fact]
         public void RearrangeTest()
         {
-            var original = (Attribute("x") | AttributeEquals("y", "1") | AttributeIncludes("z", "2")) + !(Element("a") & Class("b") & Class("c"));
+            var original = (Attribute("a") | Hover) + !(Class("b") & Id("c")) & Active;
             var round1 = ((ContainerElementSelector<TestContext>)original).Rearrange();
             var round2 = ((ContainerElementSelector<TestContext>)round1).Rearrange();
-            Assert.Equal("[x]+:not(a),[x]+:not(.b),[x]+:not(.c),[y='1']+:not(a),[y='1']+:not(.b),[y='1']+:not(.c),[z~='2']+:not(a),[z~='2']+:not(.b),[z~='2']+:not(.c)", round2.ToString(new()));
+            Assert.Equal(round1, round2);
+        }
+
+        [Fact]
+        public void OutputTest()
+        {
+            var selector = (Attribute("a") | Hover) + !(Class("b") & Id("c")) & Active;
+            Assert.Equal("[a]+:not(.b):active,[a]+:not(#c):active,:hover+:not(.b):active,:hover+:not(#c):active", selector.ToString(new()));
         }
     }
 }
