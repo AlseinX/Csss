@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static Csss.CssBuilder<object>;
+using System.Reflection;
+
 namespace Csss
 {
     public abstract record ElementSelector<TContext> : CssFragment<TContext>
@@ -31,17 +32,17 @@ namespace Csss
         };
 
         public static ElementSelector<TContext> operator /(ElementSelector<TContext> lhs, ElementSelector<TContext> rhs)
-        => rhs & new ParentElementSelector<TContext>(lhs);
+        => new ParentElementSelector<TContext>(lhs) & rhs;
 
         public static ElementSelector<TContext> operator >(ElementSelector<TContext> lhs, ElementSelector<TContext> rhs)
-        => rhs & new DirectParentElementSelector<TContext>(lhs);
+        => new DirectParentElementSelector<TContext>(lhs) & rhs;
 
         [Obsolete]
         public static ElementSelector<TContext> operator <(ElementSelector<TContext> lhs, ElementSelector<TContext> rhs)
-        => lhs & new DirectParentElementSelector<TContext>(rhs);
+        => new DirectParentElementSelector<TContext>(rhs) & lhs;
 
         public static ElementSelector<TContext> operator +(ElementSelector<TContext> lhs, ElementSelector<TContext> rhs)
-        => rhs & new BeforeElementSelector<TContext>(lhs);
+        => new BeforeElementSelector<TContext>(lhs) & rhs;
 
         internal ElementSelector() { }
 
@@ -53,7 +54,189 @@ namespace Csss
                 _ => this
             };
 
-            yield break;
+            static IEnumerable<ElementSelector<TContext>> Flaten<TElementSelector>(ElementSelector<TContext> selector)
+                where TElementSelector : BivariateElementSelector<TContext>
+            {
+                if (selector is TElementSelector biv)
+                {
+                    foreach (var item in Flaten<TElementSelector>(biv.Lhs))
+                    {
+                        yield return item;
+                    }
+
+                    foreach (var item in Flaten<TElementSelector>(biv.Rhs))
+                    {
+                        yield return item;
+                    }
+                }
+                else
+                {
+                    yield return selector;
+                }
+            }
+
+            var first = true;
+
+            foreach (var item in Flaten<OrElementSelector<TContext>>(target))
+            {
+                if (first)
+                {
+                    first = false;
+                }
+                else
+                {
+                    yield return ",";
+                }
+
+                foreach (var result in HandleSingle(item))
+                {
+                    yield return result;
+                }
+            }
+
+            static IEnumerable<ContextualValue<TContext, string>> HandleSingle(ElementSelector<TContext> target)
+            {
+                var element = default(ElementElementSelector<TContext>);
+                var id = default(IdElementSelector<TContext>);
+                var others = default(List<TerminalElementSelector<TContext>>);
+                var locators = default(List<LocatorElementSelector<TContext>>);
+
+                foreach (var item in Flaten<AndElementSelector<TContext>>(target))
+                {
+                    switch (item)
+                    {
+                        case ElementElementSelector<TContext> { IsNot: false } i:
+                            element = element == default ? i : throw new AmbiguousMatchException("Multiple element selectors found.");
+                            break;
+
+                        case IdElementSelector<TContext> { IsNot: false } i:
+                            id = id == default ? i : throw new AmbiguousMatchException("Multiple id selectors found.");
+                            break;
+
+                        case TerminalElementSelector<TContext> i:
+                            others ??= new();
+                            others.Add(i);
+                            break;
+
+                        case LocatorElementSelector<TContext> i:
+                            locators ??= new();
+                            locators.Add(i);
+                            break;
+                    }
+                }
+
+                if (locators != default)
+                {
+                    foreach (var locator in locators)
+                    {
+                        foreach (var result in HandleSingle(locator.Locator))
+                        {
+                            yield return result;
+                        }
+
+                        yield return locator switch
+                        {
+                            ParentElementSelector<TContext> _ => " ",
+                            DirectParentElementSelector<TContext> _ => ">",
+                            BeforeElementSelector<TContext> _ => "+",
+                            _ => throw new NotSupportedException()
+                        };
+                    }
+                }
+
+                static IEnumerable<ContextualValue<TContext, string>> HandleTerminal(TerminalElementSelector<TContext> selector)
+                {
+                    if (selector.IsNot)
+                    {
+                        yield return ":not(";
+                    }
+
+                    switch (selector)
+                    {
+                        case ElementElementSelector<TContext> { Name: var name }:
+                            yield return name;
+                            break;
+
+                        case IdElementSelector<TContext> { Id: var id }:
+                            yield return "#";
+                            yield return id;
+                            break;
+
+                        case ClassElementSelector<TContext> { Class: var @class }:
+                            yield return ".";
+                            yield return @class;
+                            break;
+
+                        case AttributeElementSelector<TContext> { Attribute: var attribute }:
+                            yield return "[";
+                            yield return attribute;
+                            yield return "]";
+                            break;
+
+                        case AttributeEqualsElementSelector<TContext> { Attribute: var attribute, Value: var value }:
+                            yield return "[";
+                            yield return attribute;
+                            yield return "='";
+                            yield return value;
+                            yield return "']";
+                            break;
+
+                        case AttributeIncludsElementSelector<TContext> { Attribute: var attribute, Value: var value }:
+                            yield return "[";
+                            yield return attribute;
+                            yield return "~='";
+                            yield return value;
+                            yield return "']";
+                            break;
+
+                        case AttributeStartsWithElementSelector<TContext> { Attribute: var attribute, Value: var value }:
+                            yield return "[";
+                            yield return attribute;
+                            yield return "|='";
+                            yield return value;
+                            yield return "']";
+                            break;
+
+                        case AllElementSelector<TContext> _:
+                            yield return "*";
+                            break;
+
+                    };
+
+                    if (selector.IsNot)
+                    {
+                        yield return ")";
+                    }
+                }
+
+
+                if (element != default)
+                {
+                    foreach (var result in HandleTerminal(element))
+                    {
+                        yield return result;
+                    }
+                }
+
+                if (id != default)
+                {
+                    foreach (var result in HandleTerminal(id))
+                    {
+                        yield return result;
+                    }
+                }
+
+                if (others != default)
+                {
+                    foreach (var terminal in others)
+                    {
+                        foreach (var result in HandleTerminal(terminal))
+                        {
+                            yield return result;
+                        }
+                    }
+                }
+            }
         }
 
 
@@ -69,7 +252,7 @@ namespace Csss
         => visitor(selector) switch
         {
             ContainerElementSelector<TContext> container => container.Visit(visitor),
-            _ => selector
+            ElementSelector<TContext> result => result
         };
 
         internal ElementSelector<TContext> Rearrange()
@@ -83,22 +266,25 @@ namespace Csss
                 var c = 0;
                 var visited = Visit(m =>
                 {
-                    if (m is OrElementSelector<TContext> or)
+                    while (m is OrElementSelector<TContext> or)
                     {
                         if (c == l)
                         {
                             x <<= 1;
                             l++;
-                            c++;
-                            return or.Lhs;
+                            m = or.Lhs;
                         }
-
-                        if ((x >> (l - c - 1) & 1) == 0)
+                        else if ((x >> (l - c - 1) & 1) == 0)
                         {
-                            return or.Lhs;
+                            m = or.Lhs;
+                        }
+                        else
+                        {
+
+                            m = or.Rhs;
                         }
 
-                        return or.Rhs;
+                        c++;
                     }
 
                     return m;
@@ -106,25 +292,42 @@ namespace Csss
 
                 x++;
 
-                while ((x & 1) == 0)
+                while ((x & 1) == 0 && l > 0)
                 {
-                    if (l == 0)
-                    {
-                        x = 0;
-                        break;
-                    }
-
                     x >>= 1;
                     l--;
                 }
 
                 result = result == default ? visited : result | visited;
-            } while (x == 0);
+            } while (x >> l == 0);
 
             return result;
         }
     }
 
+    internal abstract record BivariateElementSelector<TContext>(ElementSelector<TContext> Lhs, ElementSelector<TContext> Rhs) : ContainerElementSelector<TContext>
+        where TContext : class
+    {
+        internal override ElementSelector<TContext> Visit(Func<ElementSelector<TContext>, ElementSelector<TContext>> visitor) => this with
+        {
+            Lhs = VisitMember(Lhs, visitor),
+            Rhs = VisitMember(Rhs, visitor)
+        };
+    }
+
+    internal abstract record LocatorElementSelector<TContext>(ElementSelector<TContext> Locator) : ContainerElementSelector<TContext>
+        where TContext : class
+    {
+        internal override ElementSelector<TContext> Not() => this with
+        {
+            Locator = Locator.Not()
+        };
+
+        internal override ElementSelector<TContext> Visit(Func<ElementSelector<TContext>, ElementSelector<TContext>> visitor) => this with
+        {
+            Locator = VisitMember(Locator, visitor)
+        };
+    }
 
     internal abstract record TerminalElementSelector<TContext>(bool IsNot = false) : ElementSelector<TContext>
         where TContext : class
@@ -151,62 +354,29 @@ namespace Csss
     where TContext : class
     { }
 
-    internal sealed record AndElementSelector<TContext>(ElementSelector<TContext> Lhs, ElementSelector<TContext> Rhs) : ContainerElementSelector<TContext>
+    internal sealed record AndElementSelector<TContext>(ElementSelector<TContext> Lhs, ElementSelector<TContext> Rhs) : BivariateElementSelector<TContext>(Lhs, Rhs)
     where TContext : class
     {
         internal override ElementSelector<TContext> Not() => new OrElementSelector<TContext>(Lhs.Not(), Rhs.Not());
-
-        internal override ElementSelector<TContext> Visit(Func<ElementSelector<TContext>, ElementSelector<TContext>> visitor) => this with
-        {
-            Lhs = VisitMember(Lhs, visitor),
-            Rhs = VisitMember(Rhs, visitor)
-        };
     }
 
-    internal sealed record OrElementSelector<TContext>(ElementSelector<TContext> Lhs, ElementSelector<TContext> Rhs) : ContainerElementSelector<TContext>
+    internal sealed record OrElementSelector<TContext>(ElementSelector<TContext> Lhs, ElementSelector<TContext> Rhs) : BivariateElementSelector<TContext>(Lhs, Rhs)
     where TContext : class
     {
         internal override ElementSelector<TContext> Not() => new AndElementSelector<TContext>(Lhs.Not(), Rhs.Not());
-
-        internal override ElementSelector<TContext> Visit(Func<ElementSelector<TContext>, ElementSelector<TContext>> visitor) => this with
-        {
-            Lhs = VisitMember(Lhs, visitor),
-            Rhs = VisitMember(Rhs, visitor)
-        };
     }
 
-    internal sealed record ParentElementSelector<TContext>(ElementSelector<TContext> Parent) : ContainerElementSelector<TContext>
+    internal sealed record ParentElementSelector<TContext>(ElementSelector<TContext> Parent) : LocatorElementSelector<TContext>(Parent)
     where TContext : class
-    {
-        internal override ElementSelector<TContext> Not() => this with { Parent = Parent.Not() };
+    { }
 
-        internal override ElementSelector<TContext> Visit(Func<ElementSelector<TContext>, ElementSelector<TContext>> visitor) => this with
-        {
-            Parent = VisitMember(Parent, visitor)
-        };
-    }
-
-    internal sealed record DirectParentElementSelector<TContext>(ElementSelector<TContext> Parent) : ContainerElementSelector<TContext>
+    internal sealed record DirectParentElementSelector<TContext>(ElementSelector<TContext> Parent) : LocatorElementSelector<TContext>(Parent)
     where TContext : class
-    {
-        internal override ElementSelector<TContext> Not() => this with { Parent = Parent.Not() };
+    { }
 
-        internal override ElementSelector<TContext> Visit(Func<ElementSelector<TContext>, ElementSelector<TContext>> visitor) => this with
-        {
-            Parent = VisitMember(Parent, visitor)
-        };
-    }
-
-    internal sealed record BeforeElementSelector<TContext>(ElementSelector<TContext> Before) : ContainerElementSelector<TContext>
+    internal sealed record BeforeElementSelector<TContext>(ElementSelector<TContext> Before) : LocatorElementSelector<TContext>(Before)
     where TContext : class
-    {
-        internal override ElementSelector<TContext> Not() => this with { Before = Before.Not() };
-
-        internal override ElementSelector<TContext> Visit(Func<ElementSelector<TContext>, ElementSelector<TContext>> visitor) => this with
-        {
-            Before = VisitMember(Before, visitor)
-        };
-    }
+    { }
 
     internal sealed record ElementElementSelector<TContext>(ContextualValue<TContext, string> Name) : TerminalElementSelector<TContext>
     where TContext : class
@@ -228,7 +398,7 @@ namespace Csss
     where TContext : class
     { }
 
-    internal sealed record AttributeIncludingElementSelector<TContext>(ContextualValue<TContext, string> Attribute, ContextualValue<TContext, string> Value) : TerminalElementSelector<TContext>
+    internal sealed record AttributeIncludsElementSelector<TContext>(ContextualValue<TContext, string> Attribute, ContextualValue<TContext, string> Value) : TerminalElementSelector<TContext>
     where TContext : class
     { }
 
@@ -259,14 +429,4 @@ namespace Csss
     internal sealed record FirstLetterElementSelector<TContext> : SingletonElementSelector<TContext, FirstLetterElementSelector<TContext>>
     where TContext : class
     { }
-
-    class A
-    {
-        void Test()
-        {
-            var style = (Element(o => "aaa") | !Id("bbb")) > Class("ccc");
-            var factory = style.ToFactory();
-            var css = factory(new()); // 也可以直接style.ToString(new())
-        }
-    }
 }

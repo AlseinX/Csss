@@ -23,5 +23,13 @@ namespace Csss
         public static ElementSelector<TContext> Class(string value) => new ClassElementSelector<TContext>(value);
 
         public static ElementSelector<TContext> Class(Func<TContext, string> factory) => new ClassElementSelector<TContext>(factory);
+
+        public static ElementSelector<TContext> Attribute(string attribute) => new AttributeElementSelector<TContext>(attribute);
+
+        public static ElementSelector<TContext> AttributeEquals(string attribute, string value) => new AttributeEqualsElementSelector<TContext>(attribute, value);
+
+        public static ElementSelector<TContext> AttributeIncludes(string attribute, string value) => new AttributeIncludsElementSelector<TContext>(attribute, value);
+
+        public static ElementSelector<TContext> AttributeStartsWith(string attribute, string value) => new AttributeStartsWithElementSelector<TContext>(attribute, value);
     }
 }
