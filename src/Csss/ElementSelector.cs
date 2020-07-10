@@ -155,12 +155,16 @@ namespace Csss
                     }
                 }
 
+                var appendAll = true;
+
                 if (element != default)
                 {
                     foreach (var result in element.Compile())
                     {
                         yield return result;
                     }
+
+                    appendAll = false;
                 }
 
                 if (id != default)
@@ -169,6 +173,8 @@ namespace Csss
                     {
                         yield return result;
                     }
+
+                    appendAll = false;
                 }
 
                 if (others != default)
@@ -180,6 +186,13 @@ namespace Csss
                             yield return result;
                         }
                     }
+
+                    appendAll = false;
+                }
+
+                if (appendAll)
+                {
+                    yield return "*";
                 }
             }
         }
