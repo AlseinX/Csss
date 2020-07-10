@@ -1,13 +1,24 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
 namespace Csss
 {
+    [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
     public abstract record ElementSelector<TContext> : CssFragment<TContext>
     where TContext : class
     {
+        public string Type
+        {
+            get
+            {
+                var name = GetType().Name;
+                return name.Substring(0, name.Length - nameof(ElementSelector<TContext>).Length - 2);
+            }
+        }
+
         public static ElementSelector<TContext> operator !(ElementSelector<TContext> selector)
         => selector.Not();
 
@@ -239,8 +250,9 @@ namespace Csss
             }
         }
 
-
         internal abstract ElementSelector<TContext> Not();
+
+        private string GetDebuggerDisplay() => ToString() ?? string.Empty;
     }
 
     internal abstract record ContainerElementSelector<TContext> : ElementSelector<TContext>
@@ -264,7 +276,7 @@ namespace Csss
             do
             {
                 var c = 0;
-                var visited = Visit(m =>
+                ElementSelector<TContext> Visitor(ElementSelector<TContext> m)
                 {
                     while (m is OrElementSelector<TContext> or)
                     {
@@ -288,7 +300,13 @@ namespace Csss
                     }
 
                     return m;
-                });
+                };
+
+                var visited = Visitor(this);
+                if (visited is ContainerElementSelector<TContext> container)
+                {
+                    visited = container.Visit(Visitor);
+                }
 
                 x++;
 
@@ -313,6 +331,8 @@ namespace Csss
             Lhs = VisitMember(Lhs, visitor),
             Rhs = VisitMember(Rhs, visitor)
         };
+
+        public override string ToString() => $"[{Lhs} {Type} {Rhs}]";
     }
 
     internal abstract record LocatorElementSelector<TContext>(ElementSelector<TContext> Locator) : ContainerElementSelector<TContext>
@@ -327,6 +347,8 @@ namespace Csss
         {
             Locator = VisitMember(Locator, visitor)
         };
+
+        public override string ToString() => $"{Type}({Locator})";
     }
 
     internal abstract record TerminalElementSelector<TContext>(bool IsNot = false) : ElementSelector<TContext>
@@ -348,6 +370,8 @@ namespace Csss
         internal static TSelf Positive { get; }
 
         internal static TSelf Negative { get; }
+
+        public override string ToString() => $"{(IsNot ? "!" : "")}{Type}";
     }
 
     internal sealed record AllElementSelector<TContext> : SingletonElementSelector<TContext, AllElementSelector<TContext>>
@@ -380,31 +404,45 @@ namespace Csss
 
     internal sealed record ElementElementSelector<TContext>(ContextualValue<TContext, string> Name) : TerminalElementSelector<TContext>
     where TContext : class
-    { }
+    {
+        public override string ToString() => $"{(IsNot ? "!" : "")}{Type}({Name})";
+    }
 
     internal sealed record IdElementSelector<TContext>(ContextualValue<TContext, string> Id) : TerminalElementSelector<TContext>
     where TContext : class
-    { }
+    {
+        public override string ToString() => $"{(IsNot ? "!" : "")}{Type}({Id})";
+    }
 
     internal sealed record ClassElementSelector<TContext>(ContextualValue<TContext, string> Class) : TerminalElementSelector<TContext>
     where TContext : class
-    { }
+    {
+        public override string ToString() => $"{(IsNot ? "!" : "")}{Type}({Class})";
+    }
 
     internal sealed record AttributeElementSelector<TContext>(ContextualValue<TContext, string> Attribute) : TerminalElementSelector<TContext>
     where TContext : class
-    { }
+    {
+        public override string ToString() => $"{(IsNot ? "!" : "")}{Type}({Attribute})";
+    }
 
     internal sealed record AttributeEqualsElementSelector<TContext>(ContextualValue<TContext, string> Attribute, ContextualValue<TContext, string> Value) : TerminalElementSelector<TContext>
     where TContext : class
-    { }
+    {
+        public override string ToString() => $"{(IsNot ? "!" : "")}{Type}({Attribute}:{Value})";
+    }
 
     internal sealed record AttributeIncludsElementSelector<TContext>(ContextualValue<TContext, string> Attribute, ContextualValue<TContext, string> Value) : TerminalElementSelector<TContext>
     where TContext : class
-    { }
+    {
+        public override string ToString() => $"{(IsNot ? "!" : "")}{Type}({Attribute}:{Value})";
+    }
 
     internal sealed record AttributeStartsWithElementSelector<TContext>(ContextualValue<TContext, string> Attribute, ContextualValue<TContext, string> Value) : TerminalElementSelector<TContext>
     where TContext : class
-    { }
+    {
+        public override string ToString() => $"{(IsNot ? "!" : "")}{Type}({Attribute}:{Value})";
+    }
 
     internal sealed record LinkElementSelector<TContext> : SingletonElementSelector<TContext, LinkElementSelector<TContext>>
     where TContext : class

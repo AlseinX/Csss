@@ -1,8 +1,10 @@
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Csss
 {
+    [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
     public readonly struct ContextualValue<TContext, TValue>
     where TContext : class
     {
@@ -54,5 +56,9 @@ namespace Csss
         public static implicit operator ContextualValue<TContext, TValue>(TValue value) => new(value);
 
         public static implicit operator ContextualValue<TContext, TValue>(Func<TContext, TValue> factory) => new(factory);
+
+        private string GetDebuggerDisplay() => ToString() ?? string.Empty;
+
+        public override string ToString() => _factory?.ToString() ?? _value?.ToString() ?? string.Empty;
     }
 }

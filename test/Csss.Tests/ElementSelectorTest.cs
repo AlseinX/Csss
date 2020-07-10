@@ -9,8 +9,10 @@ namespace Csss.Tests
         [Fact]
         public void RearrangeTest()
         {
-            var s = Element("x") > !(Element("a") & Class("b") & Id("c"));
-            var result = s.ToString(new());
+            var s = !(Element("x") & Element("y")) / !(Element("a") & Class("b"));
+            var r = ((ContainerElementSelector<TestContext>)s).Rearrange();
+            var r2 = ((ContainerElementSelector<TestContext>)r).Rearrange();
+            var result = r.ToString(new());
         }
     }
 }
