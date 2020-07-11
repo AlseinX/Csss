@@ -53,7 +53,7 @@ namespace Csss
         => new DirectParentElementSelector<TContext>(rhs) & lhs;
 
         public static ElementSelector<TContext> operator +(ElementSelector<TContext> lhs, ElementSelector<TContext> rhs)
-        => new BeforeElementSelector<TContext>(lhs) & rhs;
+        => new AheadElementSelector<TContext>(lhs) & rhs;
 
         internal ElementSelector() { }
 
