@@ -200,25 +200,25 @@ namespace Csss
         private protected override IEnumerable<ContextualValue<TContext, string>> Output => new ContextualValue<TContext, string>[] { ":only-child" };
     }
 
-    internal sealed record NthChildElementSelector<TContext>(ContextualValue<TContext, string> Value) : TerminalElementSelector<TContext>
+    internal sealed record NthChildElementSelector<TContext>(ContextualValue<TContext, int> Value) : TerminalElementSelector<TContext>
     where TContext : class
     {
         private protected override IEnumerable<ContextualValue<TContext, string>> Output => new[] { ":nth-child(", Value, ")" };
     }
 
-    internal sealed record NthLastChildElementSelector<TContext>(ContextualValue<TContext, string> Value) : TerminalElementSelector<TContext>
+    internal sealed record NthLastChildElementSelector<TContext>(ContextualValue<TContext, int> Value) : TerminalElementSelector<TContext>
     where TContext : class
     {
         private protected override IEnumerable<ContextualValue<TContext, string>> Output => new[] { ":nth-last-child(", Value, ")" };
     }
 
-    internal sealed record NthOfTypeElementSelector<TContext>(ContextualValue<TContext, string> Value) : TerminalElementSelector<TContext>
+    internal sealed record NthOfTypeElementSelector<TContext>(ContextualValue<TContext, int> Value) : TerminalElementSelector<TContext>
     where TContext : class
     {
         private protected override IEnumerable<ContextualValue<TContext, string>> Output => new[] { ":nth-of-type(", Value, ")" };
     }
 
-    internal sealed record NthLastOfTypeElementSelector<TContext>(ContextualValue<TContext, string> Value) : TerminalElementSelector<TContext>
+    internal sealed record NthLastOfTypeElementSelector<TContext>(ContextualValue<TContext, int> Value) : TerminalElementSelector<TContext>
     where TContext : class
     {
         private protected override IEnumerable<ContextualValue<TContext, string>> Output => new[] { ":nth-last-of-type(", Value, ")" };
