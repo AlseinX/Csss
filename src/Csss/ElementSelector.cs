@@ -53,7 +53,10 @@ namespace Csss
         => new DirectParentElementSelector<TContext>(rhs) & lhs;
 
         public static ElementSelector<TContext> operator +(ElementSelector<TContext> lhs, ElementSelector<TContext> rhs)
-        => new AheadElementSelector<TContext>(lhs) & rhs;
+        => new RightPriorElementSelector<TContext>(lhs) & rhs;
+
+        public static ElementSelector<TContext> operator -(ElementSelector<TContext> lhs, ElementSelector<TContext> rhs)
+        => new PriorElementSelector<TContext>(lhs) & rhs;
 
         internal ElementSelector() { }
 
@@ -145,13 +148,7 @@ namespace Csss
                             yield return result;
                         }
 
-                        yield return locator switch
-                        {
-                            ParentElementSelector<TContext> _ => " ",
-                            DirectParentElementSelector<TContext> _ => ">",
-                            BeforeElementSelector<TContext> _ => "+",
-                            _ => throw new NotSupportedException()
-                        };
+                        yield return locator.Symbol;
                     }
                 }
 
@@ -294,6 +291,8 @@ namespace Csss
         {
             Locator = VisitMember(Locator, visitor)
         };
+
+        internal abstract string Symbol { get; }
 
         public override string ToString() => $"{Type}({Locator})";
     }

@@ -22,15 +22,27 @@ namespace Csss
 
     internal sealed record ParentElementSelector<TContext>(ElementSelector<TContext> Parent) : LocatorElementSelector<TContext>(Parent)
     where TContext : class
-    { }
+    {
+        internal override string Symbol => " ";
+    }
 
     internal sealed record DirectParentElementSelector<TContext>(ElementSelector<TContext> Parent) : LocatorElementSelector<TContext>(Parent)
     where TContext : class
-    { }
+    {
+        internal override string Symbol => ">";
+    }
 
-    internal sealed record AheadElementSelector<TContext>(ElementSelector<TContext> Ahead) : LocatorElementSelector<TContext>(Ahead)
+    internal sealed record RightPriorElementSelector<TContext>(ElementSelector<TContext> Prior) : LocatorElementSelector<TContext>(Prior)
     where TContext : class
-    { }
+    {
+        internal override string Symbol => "+";
+    }
+
+    internal sealed record PriorElementSelector<TContext>(ElementSelector<TContext> Prior) : LocatorElementSelector<TContext>(Prior)
+    where TContext : class
+    {
+        internal override string Symbol => "~";
+    }
 
     internal sealed record ElementElementSelector<TContext>(ContextualValue<TContext, string> Name) : TerminalElementSelector<TContext>
     where TContext : class
