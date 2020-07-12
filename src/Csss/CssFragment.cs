@@ -49,14 +49,7 @@ namespace Csss
 
                 foreach (var v in cache)
                 {
-                    if (v.Get(out var value, out var factory))
-                    {
-                        sb.Append(value);
-                    }
-                    else
-                    {
-                        sb.Append(factory(context));
-                    }
+                    sb.Append(v[context]);
                 }
 
                 return sb.ToString();
