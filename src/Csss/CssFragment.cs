@@ -49,7 +49,7 @@ namespace Csss
 
                 foreach (var v in cache)
                 {
-                    sb.Append(v.Get(context));
+                    sb.Append(v[context]);
                 }
 
                 return sb.ToString();

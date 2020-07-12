@@ -41,7 +41,7 @@ namespace Csss
             }
         }
 
-        public TValue Get(TContext context) => _factory == default ? _value : _factory(context);
+        public TValue this[TContext context] => _factory == default ? _value : _factory(context);
 
         public static implicit operator ContextualValue<TContext, TValue>(TValue value) => new(value);
 
@@ -49,7 +49,7 @@ namespace Csss
 
         public static implicit operator ContextualValue<TContext, string>(ContextualValue<TContext, TValue> value)
         => value._factory == null ?
-            (new(value._value!.ToString()!)) :
+            new(value._value!.ToString()!) :
             new ContextualValue<TContext, string>(context => value._factory(context)!.ToString()!);
 
         private string GetDebuggerDisplay() => ToString();
