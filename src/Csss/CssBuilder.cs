@@ -32,13 +32,25 @@ namespace Csss
 
         public static ElementSelector<TContext> AttributeEquals(Func<TContext, string> attributeFactory, Func<TContext, string> valueFactory) => new AttributeEqualsElementSelector<TContext>(attributeFactory, valueFactory);
 
+        public static ElementSelector<TContext> AttributeEquals(Func<TContext, string> attributeFactory, string value) => new AttributeEqualsElementSelector<TContext>(attributeFactory, value);
+
+        public static ElementSelector<TContext> AttributeEquals(string attribute, Func<TContext, string> valueFactory) => new AttributeEqualsElementSelector<TContext>(attribute, valueFactory);
+
         public static ElementSelector<TContext> AttributeHasWord(string attribute, string value) => new AttributeHasWordElementSelector<TContext>(attribute, value);
 
         public static ElementSelector<TContext> AttributeHasWord(Func<TContext, string> attributeFactory, Func<TContext, string> valueFactory) => new AttributeHasWordElementSelector<TContext>(attributeFactory, valueFactory);
 
+        public static ElementSelector<TContext> AttributeHasWord(Func<TContext, string> attributeFactory, string value) => new AttributeHasWordElementSelector<TContext>(attributeFactory, value);
+
+        public static ElementSelector<TContext> AttributeHasWord(string attribute, Func<TContext, string> valueFactory) => new AttributeHasWordElementSelector<TContext>(attribute, valueFactory);
+
         public static ElementSelector<TContext> AttributeFirstWord(string attribute, string value) => new AttributeFirstWordElementSelector<TContext>(attribute, value);
 
         public static ElementSelector<TContext> AttributeFirstWord(Func<TContext, string> attributeFactory, Func<TContext, string> valueFactory) => new AttributeFirstWordElementSelector<TContext>(attributeFactory, valueFactory);
+
+        public static ElementSelector<TContext> AttributeFirstWord(Func<TContext, string> attributeFactory, string value) => new AttributeFirstWordElementSelector<TContext>(attributeFactory, value);
+
+        public static ElementSelector<TContext> AttributeFirstWord(string attribute, Func<TContext, string> valueFactory) => new AttributeFirstWordElementSelector<TContext>(attribute, valueFactory);
 
         public static ElementSelector<TContext> All => AllElementSelector<TContext>.Positive;
 
@@ -70,13 +82,25 @@ namespace Csss
 
         public static ElementSelector<TContext> AttributeStartsWith(Func<TContext, string> attributeFactory, Func<TContext, string> valueFactory) => new AttributeStartsWithElementSelector<TContext>(attributeFactory, valueFactory);
 
+        public static ElementSelector<TContext> AttributeStartsWith(Func<TContext, string> attributeFactory, string value) => new AttributeStartsWithElementSelector<TContext>(attributeFactory, value);
+
+        public static ElementSelector<TContext> AttributeStartsWith(string attribute, Func<TContext, string> valueFactory) => new AttributeStartsWithElementSelector<TContext>(attribute, valueFactory);
+
         public static ElementSelector<TContext> AttributeEndsWith(string attribute, string value) => new AttributeEndsWithElementSelector<TContext>(attribute, value);
 
         public static ElementSelector<TContext> AttributeEndsWith(Func<TContext, string> attributeFactory, Func<TContext, string> valueFactory) => new AttributeEndsWithElementSelector<TContext>(attributeFactory, valueFactory);
 
+        public static ElementSelector<TContext> AttributeEndsWith(Func<TContext, string> attributeFactory, string value) => new AttributeEndsWithElementSelector<TContext>(attributeFactory, value);
+
+        public static ElementSelector<TContext> AttributeEndsWith(string attribute, Func<TContext, string> valueFactory) => new AttributeEndsWithElementSelector<TContext>(attribute, valueFactory);
+
         public static ElementSelector<TContext> AttributeContains(string attribute, string value) => new AttributeContainsElementSelector<TContext>(attribute, value);
 
         public static ElementSelector<TContext> AttributeContains(Func<TContext, string> attributeFactory, Func<TContext, string> valueFactory) => new AttributeContainsElementSelector<TContext>(attributeFactory, valueFactory);
+
+        public static ElementSelector<TContext> AttributeContains(Func<TContext, string> attributeFactory, string value) => new AttributeContainsElementSelector<TContext>(attributeFactory, value);
+
+        public static ElementSelector<TContext> AttributeContains(string attribute, Func<TContext, string> valueFactory) => new AttributeContainsElementSelector<TContext>(attribute, valueFactory);
 
         public static ElementSelector<TContext> FirstOfType => FirstOfTypeElementSelector<TContext>.Positive;
 

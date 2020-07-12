@@ -203,25 +203,25 @@ namespace Csss
     internal sealed record NthChildElementSelector<TContext>(ContextualValue<TContext, int> Value) : TerminalElementSelector<TContext>
     where TContext : class
     {
-        private protected override IEnumerable<ContextualValue<TContext, string>> Output => new[] { ":nth-child(", Value, ")" };
+        private protected override IEnumerable<ContextualValue<TContext, string>> Output => new ContextualValue<TContext, string>[] { ":nth-child(", Value, ")" };
     }
 
     internal sealed record NthLastChildElementSelector<TContext>(ContextualValue<TContext, int> Value) : TerminalElementSelector<TContext>
     where TContext : class
     {
-        private protected override IEnumerable<ContextualValue<TContext, string>> Output => new[] { ":nth-last-child(", Value, ")" };
+        private protected override IEnumerable<ContextualValue<TContext, string>> Output => new ContextualValue<TContext, string>[] { ":nth-last-child(", Value, ")" };
     }
 
     internal sealed record NthOfTypeElementSelector<TContext>(ContextualValue<TContext, int> Value) : TerminalElementSelector<TContext>
     where TContext : class
     {
-        private protected override IEnumerable<ContextualValue<TContext, string>> Output => new[] { ":nth-of-type(", Value, ")" };
+        private protected override IEnumerable<ContextualValue<TContext, string>> Output => new ContextualValue<TContext, string>[] { ":nth-of-type(", Value, ")" };
     }
 
     internal sealed record NthLastOfTypeElementSelector<TContext>(ContextualValue<TContext, int> Value) : TerminalElementSelector<TContext>
     where TContext : class
     {
-        private protected override IEnumerable<ContextualValue<TContext, string>> Output => new[] { ":nth-last-of-type(", Value, ")" };
+        private protected override IEnumerable<ContextualValue<TContext, string>> Output => new ContextualValue<TContext, string>[] { ":nth-last-of-type(", Value, ")" };
     }
 
     internal sealed record LastChildElementSelector<TContext> : SingletonElementSelector<TContext, LastChildElementSelector<TContext>>
