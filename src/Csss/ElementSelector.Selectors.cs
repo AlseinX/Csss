@@ -28,7 +28,7 @@ namespace Csss
     where TContext : class
     { }
 
-    internal sealed record BeforeElementSelector<TContext>(ElementSelector<TContext> Before) : LocatorElementSelector<TContext>(Before)
+    internal sealed record AheadElementSelector<TContext>(ElementSelector<TContext> Ahead) : LocatorElementSelector<TContext>(Ahead)
     where TContext : class
     { }
 
@@ -70,7 +70,7 @@ namespace Csss
         public override string ToString() => $"{(IsNot ? "!" : "")}{Type}({Attribute}:{Value})";
     }
 
-    internal sealed record AttributeIncludsElementSelector<TContext>(ContextualValue<TContext, string> Attribute, ContextualValue<TContext, string> Value) : TerminalElementSelector<TContext>
+    internal sealed record AttributeHasWordElementSelector<TContext>(ContextualValue<TContext, string> Attribute, ContextualValue<TContext, string> Value) : TerminalElementSelector<TContext>
     where TContext : class
     {
         private protected override IEnumerable<ContextualValue<TContext, string>> Output => new[] { "[", Attribute, "~='", Value, "']" };
@@ -78,7 +78,7 @@ namespace Csss
         public override string ToString() => $"{(IsNot ? "!" : "")}{Type}({Attribute}:{Value})";
     }
 
-    internal sealed record AttributeStartsWithElementSelector<TContext>(ContextualValue<TContext, string> Attribute, ContextualValue<TContext, string> Value) : TerminalElementSelector<TContext>
+    internal sealed record AttributeFirstWordElementSelector<TContext>(ContextualValue<TContext, string> Attribute, ContextualValue<TContext, string> Value) : TerminalElementSelector<TContext>
     where TContext : class
     {
         private protected override IEnumerable<ContextualValue<TContext, string>> Output => new[] { "[", Attribute, "|='", Value, "']" };
@@ -120,5 +120,161 @@ namespace Csss
     where TContext : class
     {
         private protected override IEnumerable<ContextualValue<TContext, string>> Output => new ContextualValue<TContext, string>[] { ":first-letter" };
+    }
+
+    internal sealed record FirstLineElementSelector<TContext> : SingletonElementSelector<TContext, FirstLineElementSelector<TContext>>
+    where TContext : class
+    {
+        private protected override IEnumerable<ContextualValue<TContext, string>> Output => new ContextualValue<TContext, string>[] { ":first-line" };
+    }
+
+    internal sealed record FirstChildElementSelector<TContext> : SingletonElementSelector<TContext, FirstChildElementSelector<TContext>>
+    where TContext : class
+    {
+        private protected override IEnumerable<ContextualValue<TContext, string>> Output => new ContextualValue<TContext, string>[] { ":first-child" };
+    }
+
+    internal sealed record BeforeElementSelector<TContext> : SingletonElementSelector<TContext, BeforeElementSelector<TContext>>
+    where TContext : class
+    {
+        private protected override IEnumerable<ContextualValue<TContext, string>> Output => new ContextualValue<TContext, string>[] { ":before" };
+    }
+
+    internal sealed record AfterElementSelector<TContext> : SingletonElementSelector<TContext, AfterElementSelector<TContext>>
+    where TContext : class
+    {
+        private protected override IEnumerable<ContextualValue<TContext, string>> Output => new ContextualValue<TContext, string>[] { ":after" };
+    }
+
+    internal sealed record LangElementSelector<TContext>(ContextualValue<TContext, string> Language) : TerminalElementSelector<TContext>
+    where TContext : class
+    {
+        private protected override IEnumerable<ContextualValue<TContext, string>> Output => new[] { ":lang(", Language, ")" };
+    }
+
+    internal sealed record AttributeStartsWithElementSelector<TContext>(ContextualValue<TContext, string> Attribute, ContextualValue<TContext, string> Value) : TerminalElementSelector<TContext>
+    where TContext : class
+    {
+        private protected override IEnumerable<ContextualValue<TContext, string>> Output => new[] { "[", Attribute, "^='", Value, "']" };
+
+        public override string ToString() => $"{(IsNot ? "!" : "")}{Type}({Attribute}:{Value})";
+    }
+
+    internal sealed record AttributeEndsWithElementSelector<TContext>(ContextualValue<TContext, string> Attribute, ContextualValue<TContext, string> Value) : TerminalElementSelector<TContext>
+    where TContext : class
+    {
+        private protected override IEnumerable<ContextualValue<TContext, string>> Output => new[] { "[", Attribute, "$='", Value, "']" };
+
+        public override string ToString() => $"{(IsNot ? "!" : "")}{Type}({Attribute}:{Value})";
+    }
+
+    internal sealed record AttributeContainsElementSelector<TContext>(ContextualValue<TContext, string> Attribute, ContextualValue<TContext, string> Value) : TerminalElementSelector<TContext>
+    where TContext : class
+    {
+        private protected override IEnumerable<ContextualValue<TContext, string>> Output => new[] { "[", Attribute, "*='", Value, "']" };
+
+        public override string ToString() => $"{(IsNot ? "!" : "")}{Type}({Attribute}:{Value})";
+    }
+
+    internal sealed record FirstOfTypeElementSelector<TContext> : SingletonElementSelector<TContext, FirstOfTypeElementSelector<TContext>>
+    where TContext : class
+    {
+        private protected override IEnumerable<ContextualValue<TContext, string>> Output => new ContextualValue<TContext, string>[] { ":first-of-type" };
+    }
+
+    internal sealed record LastOfTypeElementSelector<TContext> : SingletonElementSelector<TContext, LastOfTypeElementSelector<TContext>>
+    where TContext : class
+    {
+        private protected override IEnumerable<ContextualValue<TContext, string>> Output => new ContextualValue<TContext, string>[] { ":last-of-type" };
+    }
+
+    internal sealed record OnlyOfTypeElementSelector<TContext> : SingletonElementSelector<TContext, OnlyOfTypeElementSelector<TContext>>
+    where TContext : class
+    {
+        private protected override IEnumerable<ContextualValue<TContext, string>> Output => new ContextualValue<TContext, string>[] { ":only-of-type" };
+    }
+
+    internal sealed record OnlyChildElementSelector<TContext> : SingletonElementSelector<TContext, OnlyChildElementSelector<TContext>>
+    where TContext : class
+    {
+        private protected override IEnumerable<ContextualValue<TContext, string>> Output => new ContextualValue<TContext, string>[] { ":only-child" };
+    }
+
+    internal sealed record NthChildElementSelector<TContext>(ContextualValue<TContext, int> Value) : TerminalElementSelector<TContext>
+    where TContext : class
+    {
+        private protected override IEnumerable<ContextualValue<TContext, string>> Output => new ContextualValue<TContext, string>[] { ":nth-child(", Value, ")" };
+    }
+
+    internal sealed record NthLastChildElementSelector<TContext>(ContextualValue<TContext, int> Value) : TerminalElementSelector<TContext>
+    where TContext : class
+    {
+        private protected override IEnumerable<ContextualValue<TContext, string>> Output => new ContextualValue<TContext, string>[] { ":nth-last-child(", Value, ")" };
+    }
+
+    internal sealed record NthOfTypeElementSelector<TContext>(ContextualValue<TContext, int> Value) : TerminalElementSelector<TContext>
+    where TContext : class
+    {
+        private protected override IEnumerable<ContextualValue<TContext, string>> Output => new ContextualValue<TContext, string>[] { ":nth-of-type(", Value, ")" };
+    }
+
+    internal sealed record NthLastOfTypeElementSelector<TContext>(ContextualValue<TContext, int> Value) : TerminalElementSelector<TContext>
+    where TContext : class
+    {
+        private protected override IEnumerable<ContextualValue<TContext, string>> Output => new ContextualValue<TContext, string>[] { ":nth-last-of-type(", Value, ")" };
+    }
+
+    internal sealed record LastChildElementSelector<TContext> : SingletonElementSelector<TContext, LastChildElementSelector<TContext>>
+    where TContext : class
+    {
+        private protected override IEnumerable<ContextualValue<TContext, string>> Output => new ContextualValue<TContext, string>[] { ":last-child" };
+    }
+
+    internal sealed record RootElementSelector<TContext> : SingletonElementSelector<TContext, RootElementSelector<TContext>>
+    where TContext : class
+    {
+        private protected override IEnumerable<ContextualValue<TContext, string>> Output => new ContextualValue<TContext, string>[] { ":root" };
+    }
+
+    internal sealed record EmptyElementSelector<TContext> : SingletonElementSelector<TContext, EmptyElementSelector<TContext>>
+    where TContext : class
+    {
+        private protected override IEnumerable<ContextualValue<TContext, string>> Output => new ContextualValue<TContext, string>[] { ":empty" };
+    }
+
+    internal sealed record TargetElementSelector<TContext> : SingletonElementSelector<TContext, TargetElementSelector<TContext>>
+    where TContext : class
+    {
+        private protected override IEnumerable<ContextualValue<TContext, string>> Output => new ContextualValue<TContext, string>[] { ":target" };
+    }
+
+    internal sealed record EnabledElementSelector<TContext> : SingletonElementSelector<TContext, EnabledElementSelector<TContext>>
+    where TContext : class
+    {
+        private protected override IEnumerable<ContextualValue<TContext, string>> Output => new ContextualValue<TContext, string>[] { ":enabled" };
+    }
+
+    internal sealed record DisabledElementSelector<TContext> : SingletonElementSelector<TContext, DisabledElementSelector<TContext>>
+    where TContext : class
+    {
+        private protected override IEnumerable<ContextualValue<TContext, string>> Output => new ContextualValue<TContext, string>[] { ":disabled" };
+    }
+
+    internal sealed record CheckedElementSelector<TContext> : SingletonElementSelector<TContext, CheckedElementSelector<TContext>>
+    where TContext : class
+    {
+        private protected override IEnumerable<ContextualValue<TContext, string>> Output => new ContextualValue<TContext, string>[] { ":checked" };
+    }
+
+    internal sealed record NotElementSelector<TContext>(ContextualValue<TContext, string> Selector) : TerminalElementSelector<TContext>
+    where TContext : class
+    {
+        private protected override IEnumerable<ContextualValue<TContext, string>> Output => new[] { ":not(", Selector, ")" };
+    }
+
+    internal sealed record SelectionElementSelector<TContext> : SingletonElementSelector<TContext, SelectionElementSelector<TContext>>
+    where TContext : class
+    {
+        private protected override IEnumerable<ContextualValue<TContext, string>> Output => new ContextualValue<TContext, string>[] { "::selection" };
     }
 }
