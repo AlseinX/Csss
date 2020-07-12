@@ -21,13 +21,5 @@ namespace Csss.Tests
             var selector = (Attribute("a") | Hover) + !(Class("b") & Id("c")) & Active;
             Assert.Equal("[a]+:not(.b):active,[a]+:not(#c):active,:hover+:not(.b):active,:hover+:not(#c):active", selector.ToString(new()));
         }
-
-        [Fact]
-        public void OutputTest2()
-        {
-            var selector = !(Class("a") & Class("b") & Class("c") & Class("d")) > !(Class("e") & Class("f") & Class("g") & Class("h")) & Active;
-            var round1 = ((ContainerElementSelector<TestContext>)selector).Rearrange();
-            var result = selector.ToString(null);
-        }
     }
 }

@@ -41,24 +41,19 @@ namespace Csss
             }
         }
 
-        public TValue Get(TContext context)
-        {
-            if (_factory == default)
-            {
-                return _value;
-            }
-            else
-            {
-                return _factory(context);
-            }
-        }
+        public TValue Get(TContext context) => _factory == default ? _value : _factory(context);
 
         public static implicit operator ContextualValue<TContext, TValue>(TValue value) => new(value);
 
         public static implicit operator ContextualValue<TContext, TValue>(Func<TContext, TValue> factory) => new(factory);
 
-        private string GetDebuggerDisplay() => ToString() ?? string.Empty;
+        public static implicit operator ContextualValue<TContext, string>(ContextualValue<TContext, TValue> value)
+        => value._factory == null ?
+            (new(value._value!.ToString()!)) :
+            new ContextualValue<TContext, string>(context => value._factory(context)!.ToString()!);
 
-        public override string ToString() => _factory?.ToString() ?? _value?.ToString() ?? string.Empty;
+        private string GetDebuggerDisplay() => ToString();
+
+        public override string ToString() => _factory == null ? "<contextual>" : _value?.ToString() ?? string.Empty;
     }
 }
